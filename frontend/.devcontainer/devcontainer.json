@@ -2,11 +2,12 @@
   "name": "Quiz Frontend",
   
   "build": {
-    "context": ".",
-    "dockerfile": "Dockerfile",
+    "context": "..",
+    "dockerfile": "../Dockerfile",
     "args": {
-      "WORKDIR": "/app"
-    }
+      // "WORKDIR": "/app"
+    },
+    "target": "development"
   },
   "runArgs": [
     "--name=quiz-frontend-dev-cont",
