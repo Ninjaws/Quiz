@@ -1,0 +1,23 @@
+{
+  "name": "Quiz Backend",
+  
+  "build": {
+    "context": ".",
+    "dockerfile": "Dockerfile",
+    "args": {
+      "WORKDIR": "/app"
+    }
+  },
+  "runArgs": ["--name=quiz-backend-dev-cont"],
+  "workspaceFolder": "/app",
+  "mounts": [
+    "source=.,target=/app,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {},
+      "extensions": [
+      ]
+    }
+  }
+}
