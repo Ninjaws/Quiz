@@ -1,4 +1,4 @@
-package com.ninjaws.quiz.Models;
+package com.ninjaws.quiz.models;
 
 import java.util.List;
 import java.util.UUID;

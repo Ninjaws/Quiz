@@ -1,22 +1,25 @@
-package com.ninjaws.quiz.Services;
+package com.ninjaws.quiz.services;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ninjaws.quiz.Models.ApiResponse;
-import com.ninjaws.quiz.Models.Question;
-import com.ninjaws.quiz.Models.Request;
-import com.ninjaws.quiz.Models.Session;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.ninjaws.quiz.models.Answers;
+import com.ninjaws.quiz.models.ApiResponse;
+import com.ninjaws.quiz.models.Question;
+import com.ninjaws.quiz.models.QuizSettings;
+import com.ninjaws.quiz.models.Request;
+import com.ninjaws.quiz.models.Session;
 
 
 @Service
@@ -31,9 +34,9 @@ public class QuizService {
      * Stores all active sessions
      * Gets added to when a user requests data
      * Gets removed from when a user requests their score (by sending their answers)
-     * TODO: Replace with something that automatically removes items after a certain amount of time (Caffein?)
      */
-    private final Map<String,Session> sessions = new ConcurrentHashMap<>();
+    // private final Map<String,Session> sessions = new ConcurrentHashMap<>();
+    private final Cache<String,Session> sessions;
 
     /**
      * Stores all user requests for data
@@ -42,18 +45,34 @@ public class QuizService {
      */
     private final BlockingQueue<Request> requests = new LinkedBlockingQueue<>();
 
+
+    public QuizService() {
+        sessions = (Caffeine.newBuilder()
+        .expireAfterWrite(1,TimeUnit.HOURS)
+        .build());
+    }
+
+    public QuizService(Cache<String, Session> cache) {
+        sessions = cache;
+    }
+
+    public QuizSettings jsonToQuizSettings(String json){
+        QuizSettings quizSettings = new QuizSettings();
+        return quizSettings;
+    }
+
     /**
      * Actions:
      * - Creates a session with sessionId
      * - Adds session to the cache
-     * - Creates request and adds it to the queue
+     * - Creates a request and adds it to the queue
+     * @param quizSettings The values set by the user, determining the kind of quiz they want
      * @return The sessionId
      */
-    public String createSession() {
+    public String createSession(QuizSettings quizSettings) {
         Session session = new Session();
-        sessions.put(session.getId(), session); // TODO: Either remove id from session, or maybe Caffein does allow them together
         try {
-            requests.put(new Request(session.getId(), "https://opentdb.com/api.php?amount=10"));
+            requests.put(new Request(session.getId(), quizSettings));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -62,14 +81,14 @@ public class QuizService {
     }
 
     /**
-     * @param sessionId
      * Actions:
      * - Looks up the session in the cache
      * - Checks if the data from the request is stored
-     * @return The data if it's available, otherwise a statuscode (?)
+     * @param sessionId
+     * @return The data if it's available, Optional.empty() if not, and an Exception if the session is invalid
      */
     public Optional<Session> checkSession(String sessionId) throws IllegalArgumentException {
-        Session session = sessions.get(sessionId);
+        Session session = sessions.getIfPresent(sessionId);
 
         if(session == null) {
             throw new IllegalArgumentException("Invalid session ID: " + sessionId);
@@ -92,12 +111,15 @@ public class QuizService {
      */
     @Scheduled(fixedDelay = 5000)
     protected void processQueue() {
+        System.out.print("Schedule!");
         Request request = requests.poll();
         if (request != null) {
-            String json = apiService.requestQuestions(request.getRequestUrl());
+            System.out.print("----------------An item!");
+            String json = apiService.requestQuestions(request.getQuizSettings());
+            System.out.print(json);
             try {
                 List<Question> questions = extractQuestions(json);
-                Session session = sessions.get(request.getSessionId());
+                Session session = sessions.getIfPresent(request.getSessionId());
                 session.setQuestions(questions);
                 sessions.put(request.getSessionId(), session);                
             } catch (IOException e) {
@@ -112,6 +134,7 @@ public class QuizService {
 
     /**
      * Receives: sessionId and answers
+     * 
      * Actions: 
      * - retrieves session from cache
      * - Deletes session from cache
@@ -119,8 +142,16 @@ public class QuizService {
      * - Calculates score
      * Returns: calculated score
      *  */
-    public void calculateScore() {
-        
+    public String getScore(Answers answers) {
+        Session session = sessions.getIfPresent(answers.getSessionId());
+        sessions.invalidate(session.getId());
+        return calculateScore(session, answers);
+    }
+
+    private String calculateScore(Session session, Answers answers) {
+        System.out.print(session);
+        System.out.print(answers);
+        return "You did great!";
     }
     
 }

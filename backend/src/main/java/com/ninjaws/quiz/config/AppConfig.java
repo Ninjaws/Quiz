@@ -1,4 +1,4 @@
-package com.ninjaws.quiz.Config;
+package com.ninjaws.quiz.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package com.ninjaws.quiz.Exception;
+package com.ninjaws.quiz.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

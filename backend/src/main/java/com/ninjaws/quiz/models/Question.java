@@ -1,4 +1,4 @@
-package com.ninjaws.quiz.Models;
+package com.ninjaws.quiz.models;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,22 +9,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
 
-/**
- * Holds the question, answers, and correct answer
- * TODO: Should not send correct answer to the user
- */
-// @Setter()
-@Getter()
+@Getter
 public class Question {
     private String type;
     private String difficulty;
     private String category;
     private String question;
+
     
-    // @JsonIgnore
-    private String correctAnswer;
-    
-    // @JsonIgnore
+    //* Hidden from the user */
+    private String correctAnswer;    
     private List<String> incorrectAnswers;
 
     @JsonProperty("answers")
