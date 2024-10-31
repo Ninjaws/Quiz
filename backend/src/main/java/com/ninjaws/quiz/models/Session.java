@@ -10,6 +10,7 @@ import lombok.Setter;
 @Setter
 public class Session {
     private final String id;
+    private int statusCode = 0;
     private List<Question> questions;
 
     public Session() {

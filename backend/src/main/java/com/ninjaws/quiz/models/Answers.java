@@ -8,8 +8,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Answers {
-    private final String sessionId;
+    private String sessionId;
     private List<String> answers;
+
+    public Answers() {}
 
     public Answers(String sessionId) {
         this.sessionId = sessionId;

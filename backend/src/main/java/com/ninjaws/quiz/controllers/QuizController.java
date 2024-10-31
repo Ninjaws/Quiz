@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ninjaws.quiz.models.Answers;
+import com.ninjaws.quiz.models.QuizSettings;
 import com.ninjaws.quiz.models.Session;
 import com.ninjaws.quiz.services.QuizService;
 
@@ -24,21 +25,24 @@ public class QuizController {
 
     @GetMapping("/questions")
     public String startSession(
-            @RequestParam(required = true) String amount,
-            @RequestParam(required = false) Integer category,
-            @RequestParam(required = false) String difficulty,
-            @RequestParam(required = false) String type
+        @RequestParam(required = true) Integer amount,
+        @RequestParam(required = false) Integer category,
+        @RequestParam(required = false) String difficulty,
+        @RequestParam(required = false) String type
     ) {
-        return quizService.createSession(quizService.jsonToQuizSettings("todo"));
-    }
+        QuizSettings quizSettings = new QuizSettings(amount, category, difficulty, type);
+        String jsonString = String.format("{\"sessionId\":\"%s\"}", quizService.createSession(quizSettings));
+        return jsonString;
+    }    
 
     @GetMapping("/status/{sessionId}")
     public Optional<Session> checkStatus(@PathVariable String sessionId) {
         return quizService.checkSession(sessionId);
     }
 
-    @PostMapping("/checkanswers")
+    @PostMapping("/score")
     public String checkAnswers(@RequestBody Answers answers) {
-        return quizService.getScore(answers);
+        String jsonString = String.format("{\"score\":\"%s\"}", quizService.getScore(answers));
+        return jsonString;
     }
 }

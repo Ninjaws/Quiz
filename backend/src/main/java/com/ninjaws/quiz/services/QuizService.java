@@ -1,22 +1,11 @@
 package com.ninjaws.quiz.services;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.ninjaws.quiz.models.Answers;
-import com.ninjaws.quiz.models.ApiResponse;
-import com.ninjaws.quiz.models.Question;
 import com.ninjaws.quiz.models.QuizSettings;
 import com.ninjaws.quiz.models.Request;
 import com.ninjaws.quiz.models.Session;
@@ -26,40 +15,9 @@ import com.ninjaws.quiz.models.Session;
 public class QuizService {
 
     @Autowired
-    private ApiService apiService;
+    private CacheService cacheService;
     @Autowired
-    private ObjectMapper objectMapper;
-
-    /**
-     * Stores all active sessions
-     * Gets added to when a user requests data
-     * Gets removed from when a user requests their score (by sending their answers)
-     */
-    // private final Map<String,Session> sessions = new ConcurrentHashMap<>();
-    private final Cache<String,Session> sessions;
-
-    /**
-     * Stores all user requests for data
-     * Executes them in order, one every 5 seconds (the limit of the external API)
-     * Removes them from the Queue when the request was succesful
-     */
-    private final BlockingQueue<Request> requests = new LinkedBlockingQueue<>();
-
-
-    public QuizService() {
-        sessions = (Caffeine.newBuilder()
-        .expireAfterWrite(1,TimeUnit.HOURS)
-        .build());
-    }
-
-    public QuizService(Cache<String, Session> cache) {
-        sessions = cache;
-    }
-
-    public QuizSettings jsonToQuizSettings(String json){
-        QuizSettings quizSettings = new QuizSettings();
-        return quizSettings;
-    }
+    private QueueService queueService;
 
     /**
      * Actions:
@@ -71,11 +29,8 @@ public class QuizService {
      */
     public String createSession(QuizSettings quizSettings) {
         Session session = new Session();
-        try {
-            requests.put(new Request(session.getId(), quizSettings));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        cacheService.addToCache(session.getId(), session);
+        queueService.addToQueue(new Request(session.getId(), quizSettings));
 
         return session.getId();
     }
@@ -88,7 +43,7 @@ public class QuizService {
      * @return The data if it's available, Optional.empty() if not, and an Exception if the session is invalid
      */
     public Optional<Session> checkSession(String sessionId) throws IllegalArgumentException {
-        Session session = sessions.getIfPresent(sessionId);
+        Session session = cacheService.getFromCache(sessionId);
 
         if(session == null) {
             throw new IllegalArgumentException("Invalid session ID: " + sessionId);
@@ -97,39 +52,7 @@ public class QuizService {
         if (session.getQuestions() == null) {
             return Optional.empty();
         }
-        System.out.print(session.getQuestions().get(0).getIncorrectAnswers().get(0));
         return Optional.of(session);
-    }
-
-    /**
-     * Every 5 seconds:
-     * - Take the top request from the queue (removes it)
-     * - Perform the request
-     * - Wait for the data
-     * - Find the matching session from the cache
-     * - Add the data to the session in the cache
-     */
-    @Scheduled(fixedDelay = 5000)
-    protected void processQueue() {
-        System.out.print("Schedule!");
-        Request request = requests.poll();
-        if (request != null) {
-            System.out.print("----------------An item!");
-            String json = apiService.requestQuestions(request.getQuizSettings());
-            System.out.print(json);
-            try {
-                List<Question> questions = extractQuestions(json);
-                Session session = sessions.getIfPresent(request.getSessionId());
-                session.setQuestions(questions);
-                sessions.put(request.getSessionId(), session);                
-            } catch (IOException e) {
-                //TODO: Log this
-            }
-        }
-    }
-
-    private List<Question> extractQuestions(String json) throws IOException {
-        return objectMapper.readValue(json, ApiResponse.class).getResults();
     }
 
     /**
@@ -142,16 +65,25 @@ public class QuizService {
      * - Calculates score
      * Returns: calculated score
      *  */
-    public String getScore(Answers answers) {
-        Session session = sessions.getIfPresent(answers.getSessionId());
-        sessions.invalidate(session.getId());
+    public int getScore(Answers answers) {
+        Session session = cacheService.getFromCache(answers.getSessionId());
+        cacheService.removeFromCache(session.getId());
         return calculateScore(session, answers);
     }
 
-    private String calculateScore(Session session, Answers answers) {
-        System.out.print(session);
-        System.out.print(answers);
-        return "You did great!";
-    }
-    
+    private int calculateScore(Session session, Answers answers) {
+        int amountCorrect = 0;
+        for(int i = 0; i < session.getQuestions().size(); i++) {
+            String correctAnswer = session.getQuestions().get(i).getCorrectAnswer();
+            String userAnswer = answers.getAnswers().get(i);
+            // for(String answer : session.getQuestions().get(i).getAnswers()) {
+            //     System.out.print(answer);
+            // }
+            
+            if (correctAnswer.equalsIgnoreCase(userAnswer)) {
+                amountCorrect++;
+            }
+        }
+        return amountCorrect;
+    }    
 }
