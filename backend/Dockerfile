@@ -16,11 +16,22 @@ ENV USER=dev
 RUN groupadd -g ${GID} ${USER} \
     && useradd -m -u ${UID} -g ${USER} ${USER}
 USER ${USER}
-EXPOSE 8080
+EXPOSE 9090
 CMD ["tail","-f","/dev/null"]
 
 #---Building
+FROM base AS build
+COPY . .
+RUN mvn clean package -DskipTests
 
-
+#--Testing
+FROM build AS testing
+RUN mvn clean test
 
 #---Production
+# Pulled again to get rid of maven, to decrease the size
+FROM openjdk:17-jdk-slim AS production
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 9090
+ENTRYPOINT ["java", "-jar", "app.jar"]

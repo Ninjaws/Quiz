@@ -18,12 +18,13 @@ import { Answers } from '../models/answers';
 import { StorageService } from './storage.service';
 import { CleanerService } from './cleaner.service';
 import { ResponseHandlerService } from './response-handler.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class QuizService {
-  private apiUrl = 'http://localhost:9090/quiz';
+  private apiUrl = environment.apiUrl + '/quiz';
 
   constructor(
     private http: HttpClient, 

@@ -22,7 +22,7 @@ COPY package*.json ./
 RUN npm install
 # Copied here, since the the Development setup uses a bind volume instead
 COPY . .
-RUN npm run build --prod
+RUN ng build --configuration production
 
 #--- Production
 FROM nginx:alpine AS production

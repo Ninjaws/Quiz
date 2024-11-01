@@ -30,7 +30,7 @@ public class ApiServiceTest {
     @Test
     public void testRequestQuestions() throws Exception {
         QuizSettings settings = new QuizSettings();
-        String jsonResponse = apiService.requestQuestions(settings);
+        String jsonResponse = apiService.handleRequest(settings);
         JsonNode jsonNode = objectMapper.readTree(jsonResponse);
 
         // Check if the response code is as expected

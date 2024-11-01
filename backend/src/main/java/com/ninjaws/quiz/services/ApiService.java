@@ -48,4 +48,21 @@ public class ApiService {
             logger.log(System.Logger.Level.ERROR, "Critical failure", e);
         }
     }
+
+    /**
+     * Collect a chuck of 50 items
+     * Store them in the DataService
+     */
+    public void collectBulk() {
+        String url = apiUrl + "?amount=50";
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            String json = response.getBody();
+            ApiResponse apiResponse = cleanerService.extractApiResponse(json);
+            responseHandler.handleResponse(apiResponse);
+            
+        } catch (RestClientException | IOException e) {
+            logger.log(System.Logger.Level.ERROR, "Critical failure", e);
+        }
+    }
 }

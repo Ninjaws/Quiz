@@ -26,7 +26,7 @@ public class ResponseHandlingService {
 
         switch (response.getResponseCode()) {
             case 0:
-                // Nothing
+                // Success
                 updateSessionInCache(session, response);
                 break;
             case 1:
@@ -58,7 +58,7 @@ public class ResponseHandlingService {
     /**
      * If the request was made by the scheduler during queue-downtime, there is no session
      */
-    public void switchInternal(ApiResponse response) {
+    public void handleResponse(ApiResponse response) {
         switch (response.getResponseCode()) {
             case 0:
                 // TODO: Store in DB
