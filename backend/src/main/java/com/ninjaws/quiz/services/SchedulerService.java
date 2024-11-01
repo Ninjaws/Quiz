@@ -27,6 +27,8 @@ public class SchedulerService {
         Request request = queueService.popFromQueue();
         if (request != null) {
             apiService.handleRequest(request);
+        } else {
+            apiService.collectBulk();
         }
     }   
     

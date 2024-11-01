@@ -22,11 +22,8 @@ CMD ["tail","-f","/dev/null"]
 #---Building
 FROM base AS build
 COPY . .
-RUN mvn clean package -DskipTests
-
-#--Testing
-FROM build AS testing
-RUN mvn clean test
+RUN mvn clean package 
+# Add -DskipTests for slightly faster build, but no testing
 
 #---Production
 # Pulled again to get rid of maven, to decrease the size

@@ -11,6 +11,8 @@ public class ResponseHandlingService {
 
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private DataService dataService;
 
     /**
      * If there is no sessionId, then this is a request from the scheduler
@@ -62,6 +64,7 @@ public class ResponseHandlingService {
         switch (response.getResponseCode()) {
             case 0:
                 // TODO: Store in DB
+                dataService.saveQuestions(response.getResults());
                 break;
             case 4:
                 // Signal DataService that we have extracted all the data. Stop gathering, switch to caching-mode
