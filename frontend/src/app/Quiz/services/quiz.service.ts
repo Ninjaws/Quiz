@@ -16,6 +16,8 @@ import {
 import { Question } from '../models/question';
 import { Answers } from '../models/answers';
 import { StorageService } from './storage.service';
+import { CleanerService } from './cleaner.service';
+import { ResponseHandlerService } from './response-handler.service';
 
 @Injectable({
   providedIn: 'root',
@@ -23,13 +25,22 @@ import { StorageService } from './storage.service';
 export class QuizService {
   private apiUrl = 'http://localhost:9090/quiz';
 
-  constructor(private http: HttpClient, private storageService: StorageService) {}
+  constructor(
+    private http: HttpClient, 
+    private storageService: StorageService, 
+    private cleanerService: CleanerService, 
+    private reponseHandler: ResponseHandlerService) {}
 
-  public async startSession(quizParams: QuizParams) {
+  public async startSession(quizParams: QuizParams): Promise<Question[] | null> {
     const sessionIdObj = await firstValueFrom(this.http.get<any>(this.apiUrl + '/questions' + this.convertParamsToUrl(quizParams)));
+    /** No need to poll if the session is not created. Likely means the queue is full */
+    if(sessionIdObj.statusCode !== 0) {
+      return this.reponseHandler.handleResponse(sessionIdObj.statusCode);
+    }
     this.storageService.setSession(sessionIdObj.sessionId);
-    const questionsObj = await lastValueFrom(this.pollQuestions(sessionIdObj.sessionId));
-    return this.cleanQuestionStrings(questionsObj.questions) as Question[];
+    const sessionObj = await lastValueFrom(this.pollQuestions(sessionIdObj.sessionId));
+
+    return this.reponseHandler.handleResponse(sessionIdObj.statusCode, sessionObj);
   }
 
   public pollQuestions(sessionId: string) {
@@ -40,26 +51,6 @@ export class QuizService {
       filter((response) => response !== null),
       take(1)
     );
-  }
-
-  private cleanQuestionStrings(questions: Question[]): Question[] {
-    for(let i = 0; i < questions.length; i++) {
-      questions[i].question_decoded = this.decodeString(questions[i].question);
-      questions[i].answers_decoded = [];
-      for(let j = 0; j < questions[i].answers.length; j++){
-        questions[i].answers_decoded!.push(this.decodeString(questions[i].answers[j]));
-      }
-    }
-    return questions;
-  }
-
-  /** Puts special characters back into the string, like ' and " */
-  private decodeString(text: string) {
-    const txt = document.createElement("textarea");
-    txt.innerHTML = text;
-    const decodedValue = txt.value;
-    txt.remove();  // Clean up the temporary element
-    return decodedValue;
   }
 
   public async getScore(answers: string[]) {

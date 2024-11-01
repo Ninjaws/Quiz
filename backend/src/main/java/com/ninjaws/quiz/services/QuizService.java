@@ -27,12 +27,17 @@ public class QuizService {
      * @param quizSettings The values set by the user, determining the kind of quiz they want
      * @return The sessionId
      */
-    public String createSession(QuizSettings quizSettings) {
+    public Optional<String> createSession(QuizSettings quizSettings) {
         Session session = new Session();
         cacheService.addToCache(session.getId(), session);
-        queueService.addToQueue(new Request(session.getId(), quizSettings));
+        boolean addedToQueue = queueService.addToQueue(new Request(session.getId(), quizSettings));
+        /** In this order, because doing the queue before the cache could lead to race conditions (request completion immediately calls cache, but then the item doesn't exist) */
+        if(!addedToQueue) {
+            cacheService.removeFromCache(session.getId());
+            return Optional.empty();
+        }
 
-        return session.getId();
+        return Optional.of(session.getId());
     }
 
     /**
@@ -49,9 +54,16 @@ public class QuizService {
             throw new IllegalArgumentException("Invalid session ID: " + sessionId);
         }
 
+        /** Still waiting for a response */
         if (session.getQuestions() == null) {
             return Optional.empty();
         }
+
+        /** Anything other than statuscode 0 doesn't result in active sessions, so remove them from the cache after reporting to the frontend */
+        if(session.getStatusCode() != 0) {
+            cacheService.removeFromCache(session.getId());
+        }
+
         return Optional.of(session);
     }
 
@@ -76,10 +88,6 @@ public class QuizService {
         for(int i = 0; i < session.getQuestions().size(); i++) {
             String correctAnswer = session.getQuestions().get(i).getCorrectAnswer();
             String userAnswer = answers.getAnswers().get(i);
-            // for(String answer : session.getQuestions().get(i).getAnswers()) {
-            //     System.out.print(answer);
-            // }
-            
             if (correctAnswer.equalsIgnoreCase(userAnswer)) {
                 amountCorrect++;
             }

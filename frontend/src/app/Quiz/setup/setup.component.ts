@@ -43,8 +43,10 @@ export class SetupComponent {
     };
 
     this.spinnerService.setActive(true);
-    this.quizService.startSession(params).then((questions: Question[]) => {
-      this.gotoQuiz(questions);
+    this.quizService.startSession(params).then((questions: Question[] | null) => {
+      if(questions !== null) {
+        this.gotoQuiz(questions);
+      }
     })
     .catch((e) => {alert("Something went wrong, please try again");})
     .finally(() => {this.spinnerService.setActive(false);});

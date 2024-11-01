@@ -59,11 +59,6 @@ public class QuizSettings {
 
     /** Inverse of toApiQuery */
     public QuizSettings(int amount, Integer category, String difficulty, String type) {
-        System.out.println(amount);
-        System.out.print(category);
-        System.out.print(difficulty);
-        System.out.print(type);
-
         this.amount = amount;
         this.category = category == null ? Category.ANY : Category.values()[category];
         this.difficulty = difficulty == null ? Difficulty.ANY : Difficulty.valueOf(difficulty.toUpperCase());

@@ -1,11 +1,16 @@
 package com.ninjaws.quiz.services;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.ninjaws.quiz.models.ApiResponse;
 import com.ninjaws.quiz.models.QuizSettings;
+import com.ninjaws.quiz.models.Request;
 
 import jakarta.validation.Valid;
 
@@ -13,9 +18,15 @@ import jakarta.validation.Valid;
 public class ApiService {
 
     @Autowired
+    private CleanerService cleanerService;
+    @Autowired
+    private ResponseHandlingService responseHandler;
+    @Autowired
     private RestTemplate restTemplate;
 
-    private final String apiUrl = "https://opentdb.com/api.php"; 
+    private static final System.Logger logger = System.getLogger(ApiService.class.getName());
+
+    private final String apiUrl = "https://opentdb.com/api.php";
 
     public ApiService() {
     }
@@ -24,25 +35,17 @@ public class ApiService {
         return apiUrl + quizSettings.toApiQuery();
     }
 
-    public String requestQuestions(@Valid QuizSettings quizSettings) {
-        String url = buildRequestString(quizSettings);
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-        String jsonData = response.getBody();
+    public void handleRequest(@Valid Request request) {
+        String url = buildRequestString(request.getQuizSettings());
 
-        // try {
-        //     int responseCode = getResponseCode(jsonData);
-        //     /** When the code has expired or you've ran out of questions, update the token and try again */
-        //     if(responseCode == 3 || responseCode == 4) {
-        //         requestSessionToken();
-        //         requestQuestions(quizSettings);
-        //     }            
-        // } catch (Exception e) {
-        //     // Failed to get a responseCode, meaning the request failed completely (they always send a response_code)
-        // }
-        return jsonData;
-    }
-
-    public void handleStatusCode(int statusCode) {
-
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            String json = response.getBody();
+            ApiResponse apiResponse = cleanerService.extractApiResponse(json);
+            responseHandler.handleResponse(request.getSessionId(), apiResponse);
+            
+        } catch (RestClientException | IOException | IllegalStateException e) {
+            logger.log(System.Logger.Level.ERROR, "Critical failure", e);
+        }
     }
 }

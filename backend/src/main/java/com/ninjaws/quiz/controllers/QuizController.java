@@ -31,8 +31,13 @@ public class QuizController {
         @RequestParam(required = false) String type
     ) {
         QuizSettings quizSettings = new QuizSettings(amount, category, difficulty, type);
-        String jsonString = String.format("{\"sessionId\":\"%s\"}", quizService.createSession(quizSettings));
-        return jsonString;
+        Optional<String> result = quizService.createSession(quizSettings);
+        if(result.isPresent()) {
+            String jsonString = String.format("{\"statusCode\":0,\"sessionId\":\"%s\"}", result.get());
+            return jsonString;
+        }
+            String jsonString = String.format("{\"statusCode\":5}");
+            return jsonString;
     }    
 
     @GetMapping("/status/{sessionId}")
