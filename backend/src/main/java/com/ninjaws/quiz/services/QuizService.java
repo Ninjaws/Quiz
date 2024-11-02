@@ -1,10 +1,12 @@
 package com.ninjaws.quiz.services;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ninjaws.quiz.entities.QuestionEntity;
 import com.ninjaws.quiz.models.Answers;
 import com.ninjaws.quiz.models.QuizSettings;
 import com.ninjaws.quiz.models.Request;
@@ -18,6 +20,10 @@ public class QuizService {
     private CacheService cacheService;
     @Autowired
     private QueueService queueService;
+    @Autowired
+    private DataService dataService;
+    @Autowired
+    private CleanerService cleanerService;
 
     /**
      * Actions:
@@ -29,7 +35,22 @@ public class QuizService {
      */
     public Optional<String> createSession(QuizSettings quizSettings) {
         Session session = new Session();
+
+        /** First, we check if there are already enough items in our db */
+        List<QuestionEntity> questionsRetrieved = dataService.lookupQuestions(quizSettings);
+        if(!questionsRetrieved.isEmpty()) {
+            session.setQuestions(cleanerService.questionListEntitytoDTO(questionsRetrieved));
+        }
+
         cacheService.addToCache(session.getId(), session);
+
+        /**
+         * If the questions were retrieved from the DB, then it doesn't need to be added to the queue
+         */
+        if(!questionsRetrieved.isEmpty()) {
+            return Optional.of(session.getId());
+        }
+
         boolean addedToQueue = queueService.addToQueue(new Request(session.getId(), quizSettings));
         /** In this order, because doing the queue before the cache could lead to race conditions (request completion immediately calls cache, but then the item doesn't exist) */
         if(!addedToQueue) {

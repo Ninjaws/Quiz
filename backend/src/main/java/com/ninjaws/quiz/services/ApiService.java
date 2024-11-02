@@ -9,6 +9,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.ninjaws.quiz.models.ApiResponse;
+import com.ninjaws.quiz.models.CategoryResponse;
 import com.ninjaws.quiz.models.QuizSettings;
 import com.ninjaws.quiz.models.Request;
 
@@ -26,13 +27,13 @@ public class ApiService {
 
     private static final System.Logger logger = System.getLogger(ApiService.class.getName());
 
-    private final String apiUrl = "https://opentdb.com/api.php";
+    private final String apiUrl = "https://opentdb.com";
 
     public ApiService() {
     }
 
     private String buildRequestString(QuizSettings quizSettings) {
-        return apiUrl + quizSettings.toApiQuery();
+        return apiUrl + "/api.php" + quizSettings.toApiQuery();
     }
 
     public void handleRequest(@Valid Request request) {
@@ -54,7 +55,9 @@ public class ApiService {
      * Store them in the DataService
      */
     public void collectBulk() {
-        String url = apiUrl + "?amount=50";
+        // TODO: Make this happen only once, when a new database is generated
+        getCategories();
+        String url = apiUrl + "/api.php?amount=50";
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
             String json = response.getBody();
@@ -64,5 +67,21 @@ public class ApiService {
         } catch (RestClientException | IOException e) {
             logger.log(System.Logger.Level.ERROR, "Critical failure", e);
         }
+
+    }
+
+
+    public void getCategories() {
+        String url = apiUrl + "/api_category.php";
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            String json = response.getBody();
+            CategoryResponse categoryResponse = cleanerService.extractCategoryResponse(json);
+            responseHandler.handleCategoryResponse(categoryResponse);
+            
+        } catch (RestClientException | IOException e) {
+            logger.log(System.Logger.Level.ERROR, "Critical failure", e);
+        }
+
     }
 }

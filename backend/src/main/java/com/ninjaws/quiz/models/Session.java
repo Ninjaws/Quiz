@@ -11,7 +11,7 @@ import lombok.Setter;
 public class Session {
     private final String id;
     private int statusCode = 0;
-    private List<Question> questions;
+    private List<QuestionDTO> questions;
 
     public Session() {
         this.id = UUID.randomUUID().toString();

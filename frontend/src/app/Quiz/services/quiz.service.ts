@@ -71,7 +71,7 @@ export class QuizService {
     url += catIndex !== 0 ? `&category=${catIndex}` : '';
 
     const diff = quizParams.difficulty.toLowerCase();
-    url += diff !== 'any difficulty' ? `&category=${diff}` : '';
+    url += diff !== 'any difficulty' ? `&difficulty=${diff}` : '';
 
     const typeIndex = this.getTypes().indexOf(quizParams.type);
     url +=

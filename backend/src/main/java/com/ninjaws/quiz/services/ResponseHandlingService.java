@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ninjaws.quiz.models.ApiResponse;
+import com.ninjaws.quiz.models.CategoryResponse;
 import com.ninjaws.quiz.models.Session;
 
 @Service
@@ -13,6 +14,8 @@ public class ResponseHandlingService {
     private CacheService cacheService;
     @Autowired
     private DataService dataService;
+    @Autowired
+    private CleanerService cleanerService;
 
     /**
      * If there is no sessionId, then this is a request from the scheduler
@@ -30,6 +33,7 @@ public class ResponseHandlingService {
             case 0:
                 // Success
                 updateSessionInCache(session, response);
+                dataService.saveQuestions(cleanerService.questionListDTOtoEntity(response.getResults()));
                 break;
             case 1:
                 // Not enough questions to satisfy the request. 
@@ -63,8 +67,7 @@ public class ResponseHandlingService {
     public void handleResponse(ApiResponse response) {
         switch (response.getResponseCode()) {
             case 0:
-                // TODO: Store in DB
-                dataService.saveQuestions(response.getResults());
+                dataService.saveQuestions(cleanerService.questionListDTOtoEntity(response.getResults()));
                 break;
             case 4:
                 // Signal DataService that we have extracted all the data. Stop gathering, switch to caching-mode
@@ -83,4 +86,7 @@ public class ResponseHandlingService {
         cacheService.addToCache(session.getId(), session);
     }
 
+    public void handleCategoryResponse(CategoryResponse categoryResponse) {
+        dataService.saveCategories(categoryResponse.getTrivia_categories());
+    }
 }

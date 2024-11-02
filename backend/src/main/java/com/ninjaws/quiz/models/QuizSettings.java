@@ -48,21 +48,25 @@ public class QuizSettings {
     @Max(50)
     private int amount = 10;
 
-    private Type type = Type.ANY;
+    // private Type type = Type.ANY;
 
-    private Difficulty difficulty = Difficulty.ANY;
+    // private Difficulty difficulty = Difficulty.ANY;
 
-    private Category category = Category.ANY;
-
+    private Integer category;
+    private String difficulty;
+    private String type;
 
     public QuizSettings(){}
 
     /** Inverse of toApiQuery */
-    public QuizSettings(int amount, Integer category, String difficulty, String type) {
+    public QuizSettings(int amount, Integer category, String difficulty, String type) {    
         this.amount = amount;
-        this.category = category == null ? Category.ANY : Category.values()[category];
-        this.difficulty = difficulty == null ? Difficulty.ANY : Difficulty.valueOf(difficulty.toUpperCase());
-        this.type = type == null ? Type.ANY : type.equals("boolean") ? Type.BOOLEAN : Type.MULTIPLE;
+        this.category = category;
+        this.difficulty = difficulty;
+        this.type = type;
+        // this.category = category == null ? Category.ANY : Category.values()[category];
+        // this.difficulty = difficulty == null ? Difficulty.ANY : Difficulty.valueOf(difficulty.toUpperCase());
+        // this.type = type == null ? Type.ANY : type.equals("boolean") ? Type.BOOLEAN : Type.MULTIPLE;
     }
 
     /**
@@ -77,19 +81,37 @@ public class QuizSettings {
      * Converts the class to a format that can be provided as arguments for the api request
      * @return The resulting request arguments as String
      */
+    // public String toApiQuery() {
+    //     StringBuilder query = new StringBuilder("?amount=" + amount);
+        
+    //     if (category != null && category != Category.ANY) {
+    //         query.append("&category=").append(category.getApiValue());
+    //     }
+
+    //     if (difficulty != null && difficulty != Difficulty.ANY) {
+    //         query.append("&difficulty=").append(difficulty.getApiValue());
+    //     }
+
+    //     if (type != null && type != Type.ANY) {
+    //         query.append("&type=").append(type.getApiValue());
+    //     }
+
+    //     return query.toString();
+    // }
+
     public String toApiQuery() {
         StringBuilder query = new StringBuilder("?amount=" + amount);
         
-        if (category != null && category != Category.ANY) {
-            query.append("&category=").append(category.getApiValue());
+        if (category != null) {
+            query.append("&category=").append(category);
         }
 
-        if (difficulty != null && difficulty != Difficulty.ANY) {
-            query.append("&difficulty=").append(difficulty.getApiValue());
+        if (difficulty != null ) {
+            query.append("&difficulty=").append(difficulty);
         }
 
-        if (type != null && type != Type.ANY) {
-            query.append("&type=").append(type.getApiValue());
+        if (type != null ) {
+            query.append("&type=").append(type);
         }
 
         return query.toString();

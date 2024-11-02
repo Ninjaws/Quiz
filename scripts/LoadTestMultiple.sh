@@ -3,7 +3,7 @@
 start_time=$(date +%s)
 
 for i in {1..6}; do
-  ./LoadTestOne.sh &
+  ./LoadTestOne-WithParams.sh &
   sleep 0.1
 done
 

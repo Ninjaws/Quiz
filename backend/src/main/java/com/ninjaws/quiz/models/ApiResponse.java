@@ -17,5 +17,5 @@ public class ApiResponse {
     @JsonProperty("response_code")
     private int responseCode;
     @JsonProperty("results")
-    private List<Question> results;
+    private List<QuestionDTO> results;
 }
