@@ -11,6 +11,8 @@ import com.ninjaws.quiz.models.Session;
 public class ResponseHandlingService {
 
     @Autowired
+    private StateManagementService stateManager;
+    @Autowired
     private CacheService cacheService;
     @Autowired
     private DataService dataService;
@@ -33,7 +35,8 @@ public class ResponseHandlingService {
             case 0:
                 // Success
                 updateSessionInCache(session, response);
-                dataService.saveQuestions(cleanerService.questionListDTOtoEntity(response.getResults()));
+                /** Managing the token gets difficult since there is a timelimit, so simply dont add these, let the bulk collector do it */
+                // dataService.saveQuestions(cleanerService.questionListDTOtoEntity(response.getResults()));
                 break;
             case 1:
                 // Not enough questions to satisfy the request. 
@@ -67,11 +70,26 @@ public class ResponseHandlingService {
     public void handleResponse(ApiResponse response) {
         switch (response.getResponseCode()) {
             case 0:
-                dataService.saveQuestions(cleanerService.questionListDTOtoEntity(response.getResults()));
+                if(stateManager.getCurrentProcessingState() == StateManagementService.ProcessingState.STARTUP) {
+                    /** Initial saving during the startup */
+                    dataService.saveQuestions(cleanerService.questionListDTOtoEntity(response.getResults()));
+                } else if (stateManager.getCurrentProcessingState() == StateManagementService.ProcessingState.REFRESH) {
+                    /** Background collecting during the night */
+                    dataService.collectQuestions(cleanerService.questionListDTOtoCollectingEntity(response.getResults()));
+                }
                 break;
             case 4:
-                // Signal DataService that we have extracted all the data. Stop gathering, switch to caching-mode
-                // TODO: Signal DB that it's full, start db-swapping process
+                // Signal DataService that we have extracted all the data. Stop gathering, 
+                // TODO: Switch to caching-mode
+                
+                /** 
+                 * If it was in the REFRESH state, move the data from collecting to the used questions
+                 * Otherwise simply switch to the NORMAL state
+                 */
+                if (stateManager.getCurrentProcessingState() == StateManagementService.ProcessingState.REFRESH) {
+                    dataService.migrateQuestions();
+                }
+                stateManager.setCurrentProcessingState(StateManagementService.ProcessingState.NORMAL);
                 break;
             case 5:
                 // Should be prevented by the scheduler

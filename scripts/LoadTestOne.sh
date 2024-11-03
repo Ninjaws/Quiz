@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Step 1: Get the sessionId from the questions endpoint
 sessionIdJson=$(curl -s http://localhost:9090/quiz/questions?amount=5)
 
@@ -22,16 +21,22 @@ echo "Received sessionId: $sessionId"
 # Step 2: Poll the status endpoint every 2 seconds
 while true; do
     status_response=$(curl -s http://localhost:9090/quiz/status/"$sessionId")
+    if [ "$status_response" != "null" ] && [ $? -eq 0 ]; then
 
-    if [ $? -eq 0 ]; then
+        statusCode=$(echo "$status_response" | grep -o '"statusCode":[0-9]*' | sed 's/"statusCode"://')
+
+        if [ "$statusCode" -ne 0 ]; then
+            echo "Exiting: statusCode is $statusCode"
+            exit 1
+        fi
+
         # Check if the response is JSON (starts with '{')
         if [[ $status_response == \{* ]]; then
-            echo "$sessionId: done!"
+            echo "$sessionId: done! status: $statusCode"
             break
         fi
     else
-        echo "Status check failed, exiting..."
-        exit 1
+        echo "Status check failed, retrying..."
     fi
 
     sleep 2

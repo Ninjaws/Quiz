@@ -13,6 +13,8 @@ public class SchedulerService {
     private QueueService queueService;
     @Autowired
     private ApiService apiService;
+    @Autowired
+    private StateManagementService stateService;
 
     public SchedulerService() {}
 
@@ -25,11 +27,23 @@ public class SchedulerService {
     @Scheduled(fixedDelay = 5000)
     protected void processQueue() {
         Request request = queueService.popFromQueue();
+
         if (request != null) {
             apiService.handleRequest(request);
         } else {
-            apiService.collectBulk();
+            if (stateService.getCurrentProcessingState() == StateManagementService.ProcessingState.STARTUP || stateService.getCurrentProcessingState() == StateManagementService.ProcessingState.REFRESH) {
+                apiService.collectBulk();
+            }
         }
     }   
+
+    /**
+     * Starts the renewing of the questions, to ensure they stay fresh
+     */
+    @Scheduled(cron = "0 0 1 * * ?")
+    protected void StartDbRefresh() {
+        apiService.getSessionToken();
+        stateService.setCurrentProcessingState(StateManagementService.ProcessingState.REFRESH);
+    }
     
 }

@@ -2,9 +2,9 @@
 
 start_time=$(date +%s)
 
-for i in {1..6}; do
-  ./LoadTestOne-WithParams.sh &
-  sleep 0.1
+for i in {1..1000}; do
+  ./LoadTestOne-Silent.sh &
+#   sleep 0.1
 done
 
 wait  # Wait for all background jobs to finish

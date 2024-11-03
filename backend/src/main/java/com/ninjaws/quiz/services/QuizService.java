@@ -38,7 +38,7 @@ public class QuizService {
 
         /** First, we check if there are already enough items in our db */
         List<QuestionEntity> questionsRetrieved = dataService.lookupQuestions(quizSettings);
-        if(!questionsRetrieved.isEmpty()) {
+        if(!questionsRetrieved.isEmpty() && questionsRetrieved.size() == quizSettings.getAmount()) {
             session.setQuestions(cleanerService.questionListEntitytoDTO(questionsRetrieved));
         }
 
@@ -47,7 +47,7 @@ public class QuizService {
         /**
          * If the questions were retrieved from the DB, then it doesn't need to be added to the queue
          */
-        if(!questionsRetrieved.isEmpty()) {
+        if(!questionsRetrieved.isEmpty() && questionsRetrieved.size() == quizSettings.getAmount()) {
             return Optional.of(session.getId());
         }
 
@@ -81,9 +81,10 @@ public class QuizService {
         }
 
         /** Anything other than statuscode 0 doesn't result in active sessions, so remove them from the cache after reporting to the frontend */
-        if(session.getStatusCode() != 0) {
-            cacheService.removeFromCache(session.getId());
-        }
+        // if(session.getStatusCode() != 0) {
+        /** Regardless of status code, this link is not reusable */
+        cacheService.removeFromCache(session.getId());
+        // }
 
         return Optional.of(session);
     }

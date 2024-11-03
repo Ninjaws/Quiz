@@ -10,12 +10,20 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ninjaws.quiz.entities.Category;
+import com.ninjaws.quiz.entities.QuestionCollectingEntity;
 import com.ninjaws.quiz.entities.QuestionEntity;
 import com.ninjaws.quiz.models.ApiResponse;
 import com.ninjaws.quiz.models.CategoryResponse;
 import com.ninjaws.quiz.models.QuestionDTO;
+import com.ninjaws.quiz.models.SessionTokenDTO;
 import com.ninjaws.quiz.repositories.CategoryRepository;
 
+/**
+ * Deals with conversions from one form of data to another
+ * Json to Object
+ * Entity to DTO
+ * etc
+ */
 @Service
 public class CleanerService {
 
@@ -44,6 +52,10 @@ public class CleanerService {
         return dtos;
     }
 
+    public SessionTokenDTO extractSessionToken(String json) throws IOException {
+        return objectMapper.readValue(json, SessionTokenDTO.class);
+    }
+
     public QuestionDTO questionEntityToDTO(QuestionEntity entity) {
         QuestionDTO dto = new QuestionDTO();
         dto.setQuestion(entity.getQuestion());
@@ -63,7 +75,7 @@ public class CleanerService {
         }
         return entities;
     }
-
+   
     public QuestionEntity questionDTOtoEntity(QuestionDTO dto) {
         QuestionEntity entity = new QuestionEntity();
         Category category = categoryRepository.findByName(decodeString(dto.getCategory())).orElseThrow(() -> new IllegalStateException("Category not in DB!"));
@@ -75,6 +87,30 @@ public class CleanerService {
         entity.setIncorrectAnswers(dto.getIncorrectAnswers());
         return entity;
     }
+
+
+    // TODO: Find a simpler way to convert from one table to another if the data is identical so this nonsense isn't necessary
+    public List<QuestionCollectingEntity> questionListDTOtoCollectingEntity(List<QuestionDTO> dtos) {
+        List<QuestionCollectingEntity> entities = new ArrayList<>();
+        for (int i = 0; i < dtos.size(); i++) {
+            QuestionDTO dto = dtos.get(i);
+            entities.add(questionDTOtoCollectingEntity(dto));
+        }
+        return entities;
+    }
+   
+    public QuestionCollectingEntity questionDTOtoCollectingEntity(QuestionDTO dto) {
+        QuestionCollectingEntity entity = new QuestionCollectingEntity();
+        Category category = categoryRepository.findByName(decodeString(dto.getCategory())).orElseThrow(() -> new IllegalStateException("Category not in DB!"));
+        entity.setCategory(category);
+        entity.setDifficulty(dto.getDifficulty());
+        entity.setType(dto.getType());
+        entity.setQuestion(dto.getQuestion());
+        entity.setCorrectAnswer(dto.getCorrectAnswer());
+        entity.setIncorrectAnswers(dto.getIncorrectAnswers());
+        return entity;
+    }
+
 
     /** 
      * For some reason, the categories come with special characters,

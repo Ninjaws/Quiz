@@ -23,6 +23,7 @@ public class QuizController {
     @Autowired
     private QuizService quizService;
 
+
     /**
      * Start a session
      * @param amount The amount of questsions
