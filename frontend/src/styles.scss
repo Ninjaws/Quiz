@@ -1,1 +1,27 @@
 /* You can add global styles to this file, and also import other style files */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+  }
+  
+  app-root {
+    flex: 1; /* Makes the AppComponent fill the available space */
+    // display:flex;
+    // justify-content: center;
+    // align-items: center;
+  }
+
+  :root {
+    // --z-base: 0;
+    // --z-dropdown: 100;
+    // --z-modal: 200;
+    // --z-tooltip: 300;
+    --z-spinner: 1800;
+}

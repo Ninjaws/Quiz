@@ -2,11 +2,12 @@
   "name": "Quiz Frontend",
   
   "build": {
-    "context": ".",
-    "dockerfile": "Dockerfile",
+    "context": "..",
+    "dockerfile": "../Dockerfile",
     "args": {
-      "WORKDIR": "/app"
-    }
+      // "WORKDIR": "/app"
+    },
+    "target": "development"
   },
   "runArgs": [
     "--name=quiz-frontend-dev-cont",
@@ -24,7 +25,10 @@
         "Angular.ng-template",
         "dbaeumer.vscode-eslint",
         "Zignd.html-css-class-completion",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ecmel.vscode-html-css",
+        "pranaygp.vscode-css-peek"
       ]
     }
   }
