@@ -41,6 +41,7 @@ docker compose up
 ## Benchmarking
 - Go to the /scripts folder and run the LoadTestMultiple.sh script
 - Inside you can change how many sessions should be created (set to 6 by default)
+- In the /scripts/benchmarks folder you can find some benchmarks I've done
 
 ## Notes
 - If the data is not present, it will try to query it from the external API, which takes significantly longer (only 1 request per 5 seconds)
