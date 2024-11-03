@@ -7,6 +7,7 @@ import { QuizParams } from '../models/quiz-params';
 import { SpinnerService } from '../../Spinner/services/spinner.service';
 import { CommonModule } from '@angular/common';
 import { Question } from '../models/question';
+import { Category } from '../models/category';
 
 @Component({
   selector: 'app-setup',
@@ -17,8 +18,8 @@ import { Question } from '../models/question';
 })
 export class SetupComponent {
 
-
-  category: string = "";
+  categories!: Category[];
+  category!: number;
   difficulty: string = "";
   type: string = "";
   amount: number = 10;
@@ -28,10 +29,13 @@ export class SetupComponent {
     public quizService: QuizService,
     private spinnerService: SpinnerService
   ) {
-    /** Setting default values */
-    this.category = this.quizService.getCategories()[0];
-    this.difficulty = this.quizService.getDifficulties()[0];
-    this.type = this.quizService.getTypes()[0];
+    quizService.getCategories().then((categories: Category[]) => {
+      /** Setting default values */
+      this.categories = categories;
+      this.category = this.categories.find(item => item.id == 0)!.id;
+      this.difficulty = this.quizService.getDifficulties()[0];
+      this.type = this.quizService.getTypes()[0];      
+    });
   }
 
   startQuiz() {

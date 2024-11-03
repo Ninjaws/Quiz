@@ -3,6 +3,7 @@ import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import scala.concurrent.duration._
 
+/** Does not work, use the LoadTestMultiple.sh in the /scripts folder in the root instead */
 class QuestionStatusSimulation extends Simulation {
     val httpProtocol = http.baseUrl("http://localhost:9090").acceptHeader("application/json")
 

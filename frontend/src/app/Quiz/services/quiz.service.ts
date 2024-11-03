@@ -19,6 +19,7 @@ import { StorageService } from './storage.service';
 import { CleanerService } from './cleaner.service';
 import { ResponseHandlerService } from './response-handler.service';
 import { environment } from '../../../environments/environment';
+import { Category } from '../models/category';
 
 @Injectable({
   providedIn: 'root',
@@ -40,8 +41,7 @@ export class QuizService {
     }
     this.storageService.setSession(sessionIdObj.sessionId);
     const sessionObj = await lastValueFrom(this.pollQuestions(sessionIdObj.sessionId));
-
-    return this.reponseHandler.handleResponse(sessionIdObj.statusCode, sessionObj);
+    return this.reponseHandler.handleResponse(sessionObj.statusCode, sessionObj);
   }
 
   public pollQuestions(sessionId: string) {
@@ -67,7 +67,7 @@ export class QuizService {
 
   private convertParamsToUrl(quizParams: QuizParams) {
     let url = `?amount=${quizParams.amount}`;
-    const catIndex = this.getCategories().indexOf(quizParams.category);
+    const catIndex = quizParams.category;
     url += catIndex !== 0 ? `&category=${catIndex}` : '';
 
     const diff = quizParams.difficulty.toLowerCase();
@@ -83,34 +83,11 @@ export class QuizService {
     return url;
   }
 
-  public getCategories(): string[] {
-    return [
-      'Any Category',
-      'General Knowledge',
-      'Entertainment: Books',
-      'Entertainment: Film',
-      'Entertainment: Music',
-      'Entertainment: Musicals & Theatres',
-      'Entertainment: Television',
-      'Entertainment: Video Games',
-      'Entertainment: Board Games',
-      'Science & Nature',
-      'Science: Computers',
-      'Science: Mathematics',
-      'Mythology',
-      'Sports',
-      'Geography',
-      'History',
-      'Politics',
-      'Art',
-      'Celebrities',
-      'Animals',
-      'Vehicles',
-      'Entertainment: Comics',
-      'Science: Gadgets',
-      'Entertainment: Japanese Anime & Manga',
-      'Entertainment: Cartoon & Animations',
-    ];
+  public async getCategories(): Promise<Category[]> {
+    let categories: Category[] = await firstValueFrom(this.http.get<any>(this.apiUrl + '/categories'));
+    categories.push({id:0,name:"Any Category"});
+    categories.sort((a,b) => a.id - b.id);
+    return categories;
   }
 
   public getDifficulties(): string[] {

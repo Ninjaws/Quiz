@@ -24,6 +24,8 @@ public class QuizService {
     private DataService dataService;
     @Autowired
     private CleanerService cleanerService;
+    @Autowired
+    private StateManagementService stateManager;
 
     /**
      * Actions:
@@ -38,19 +40,20 @@ public class QuizService {
 
         /** First, we check if there are already enough items in our db */
         List<QuestionEntity> questionsRetrieved = dataService.lookupQuestions(quizSettings);
+        /** If the items are not matching the required amount, and the db is not currently being filled up, then they simply don't exist */
+        if (questionsRetrieved.size() < quizSettings.getAmount() && stateManager.getCurrentProcessingState() != StateManagementService.ProcessingState.STARTUP) {
+            session.setStatusCode(1);
+            cacheService.addToCache(session.getId(), session);
+            return Optional.of(session.getId());
+        }
+        /** All items are collected in from the database, it doesn't need to be added to the queue */
         if(!questionsRetrieved.isEmpty() && questionsRetrieved.size() == quizSettings.getAmount()) {
             session.setQuestions(cleanerService.questionListEntitytoDTO(questionsRetrieved));
-        }
-
-        cacheService.addToCache(session.getId(), session);
-
-        /**
-         * If the questions were retrieved from the DB, then it doesn't need to be added to the queue
-         */
-        if(!questionsRetrieved.isEmpty() && questionsRetrieved.size() == quizSettings.getAmount()) {
+            cacheService.addToCache(session.getId(), session);
             return Optional.of(session.getId());
         }
 
+        cacheService.addToCache(session.getId(), session);
         boolean addedToQueue = queueService.addToQueue(new Request(session.getId(), quizSettings));
         /** In this order, because doing the queue before the cache could lead to race conditions (request completion immediately calls cache, but then the item doesn't exist) */
         if(!addedToQueue) {
@@ -75,16 +78,17 @@ public class QuizService {
             throw new IllegalArgumentException("Invalid session ID: " + sessionId);
         }
 
+        /** Anything other than statuscode 0 doesn't result in active sessions, so remove them from the cache after reporting to the frontend */
+        if(session.getStatusCode() != 0) {
+            cacheService.removeFromCache(session.getId());
+            return Optional.of(session);
+        }
+
         /** Still waiting for a response */
         if (session.getQuestions() == null) {
             return Optional.empty();
         }
 
-        /** Anything other than statuscode 0 doesn't result in active sessions, so remove them from the cache after reporting to the frontend */
-        // if(session.getStatusCode() != 0) {
-        /** Regardless of status code, this link is not reusable */
-        cacheService.removeFromCache(session.getId());
-        // }
 
         return Optional.of(session);
     }
@@ -93,7 +97,7 @@ public class QuizService {
      * Receives: sessionId and answers
      * 
      * Actions: 
-     * - retrieves session from cache
+     * - Retrieves session from cache
      * - Deletes session from cache
      * - Matches answers answers to correctAnswers
      * - Calculates score

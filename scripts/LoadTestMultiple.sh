@@ -2,16 +2,15 @@
 
 start_time=$(date +%s)
 
-for i in {1..1000}; do
+for i in {1..6}; do
   ./LoadTestOne-Silent.sh &
 #   sleep 0.1
 done
 
-wait  # Wait for all background jobs to finish
+wait
 
-end_time=$(date +%s)  # Capture the end time
+end_time=$(date +%s)
 
-# Calculate and print the elapsed time
 elapsed_time=$((end_time - start_time))
 echo "Done!"
 echo "Total time taken: $elapsed_time seconds"

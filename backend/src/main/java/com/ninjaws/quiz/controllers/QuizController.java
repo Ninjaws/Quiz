@@ -1,5 +1,6 @@
 package com.ninjaws.quiz.controllers;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ninjaws.quiz.entities.Category;
 import com.ninjaws.quiz.models.Answers;
 import com.ninjaws.quiz.models.QuizSettings;
 import com.ninjaws.quiz.models.Session;
+import com.ninjaws.quiz.services.DataService;
 import com.ninjaws.quiz.services.QuizService;
 
 @RestController
@@ -22,6 +25,8 @@ public class QuizController {
 
     @Autowired
     private QuizService quizService;
+    @Autowired
+    private DataService dataService;
 
 
     /**
@@ -68,5 +73,10 @@ public class QuizController {
     public String checkAnswers(@RequestBody Answers answers) {
         String jsonString = String.format("{\"score\":\"%s\"}", quizService.getScore(answers));
         return jsonString;
+    }
+
+    @GetMapping("/categories")
+    public List<Category> getCategories(){
+        return dataService.getCategories();
     }
 }

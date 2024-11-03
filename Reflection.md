@@ -28,3 +28,11 @@ Then start replacing the cache items one at a time.
 
 Users shouldn't feel this at all, because the active sessions are stored in their own cache items
 
+# Progress so far
+There only seem to be ~4100 items, making the collecting phase only last around 7 minutes.
+
+Swapping dbs is replaced with swapping tables, seems to work just as fine, yet much simpler to set up
+
+TODO: Add a caching state, and start filling up each unique combination with the items from the db
+This should lead to performance gains
+

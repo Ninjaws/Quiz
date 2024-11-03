@@ -36,3 +36,13 @@ sudo reboot
 docker compose up
 ```
 - Visit localhost:4200 to play the quiz!
+
+
+## Benchmarking
+- Go to the /scripts folder and run the LoadTestMultiple.sh script
+- Inside you can change how many sessions should be created (set to 6 by default)
+
+## Notes
+- If the data is not present, it will try to query it from the external API, which takes significantly longer (only 1 request per 5 seconds)
+- When running it locally, give the backend a few minutes to gather data in bulk (should be completely done in ~7 minutes)
+- It refreshes this data every night in the background, so it stays up to date

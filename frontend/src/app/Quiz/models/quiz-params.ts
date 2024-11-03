@@ -1,5 +1,7 @@
+import { Category } from "./category";
+
 export interface QuizParams {
-    category: string;
+    category: number;
     type: string;
     amount: number;
     difficulty: string;

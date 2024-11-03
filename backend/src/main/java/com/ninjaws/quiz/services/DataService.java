@@ -50,6 +50,9 @@ public class DataService {
         return categoryRepository.saveAll(categories);
     }
 
+    public List<Category> getCategories(){
+        return categoryRepository.findAll();
+    }
     /**
      * Moving the collected questions to the questions list
      *
