@@ -1,0 +1,19 @@
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="bg-white p-8 rounded-lg shadow-md w-80 overflow-y-scroll max-h-3/4 no-scrollbar">
+        <div *ngFor="let question of questions; let i = index" class="mb-6">
+            <h2 class="text-lg font-semibold mb-2">{{ question.question_decoded }}</h2>
+            <div *ngFor="let answer of question.answers_decoded; let j = index">
+                <label class="block mb-1">
+                    <input type="radio" name="question{{ i }}" [value]="answer" (change)="selectAnswer(i, question.answers[j])"
+                        [checked]="selectedAnswers[i] === answer" class="mr-2" />
+                    {{ answer }}
+                </label>
+            </div>
+        </div>
+
+        <button (click)="getScore()" [disabled]="!allQuestionsAnswered()" 
+            class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition disabled:opacity-50 ">
+            Get Score
+        </button>
+    </div>
+</div>

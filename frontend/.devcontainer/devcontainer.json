@@ -1,0 +1,35 @@
+{
+  "name": "Quiz Frontend",
+  
+  "build": {
+    "context": "..",
+    "dockerfile": "../Dockerfile",
+    "args": {
+      // "WORKDIR": "/app"
+    },
+    "target": "development"
+  },
+  "runArgs": [
+    "--name=quiz-frontend-dev-cont",
+    "--net=host" // Allows it to be opened on the host network
+  ],   
+  "workspaceFolder": "/app",
+  "mounts": [
+    "source=.,target=/app,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {},
+      "extensions": [
+        "christian-kohler.npm-intellisense",
+        "Angular.ng-template",
+        "dbaeumer.vscode-eslint",
+        "Zignd.html-css-class-completion",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ecmel.vscode-html-css",
+        "pranaygp.vscode-css-peek"
+      ]
+    }
+  }
+}

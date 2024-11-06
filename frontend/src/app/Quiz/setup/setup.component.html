@@ -1,0 +1,35 @@
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="bg-white p-8 rounded-lg shadow-md w-80">
+        <h1 class="text-2xl font-bold mb-6 text-center bg-red">Quiz App</h1>
+
+        <div class="mb-4">
+            <label for="category" class="block mb-1">Category</label>
+            <select id="category" class="w-full p-2 border rounded" [(ngModel)]="category">
+                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label for="difficulty" class="block mb-1">Difficulty</label>
+            <select id="difficulty" class="w-full p-2 border rounded" [(ngModel)]="difficulty">
+                <option *ngFor="let difficulty of quizService.getDifficulties()" class="focus:outline-none" [value]="difficulty">{{ difficulty }}</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label for="type" class="block mb-1">Type</label>
+            <select id="type" class="w-full p-2 border rounded" [(ngModel)]="type">
+                <option *ngFor="let type of quizService.getTypes()" [value]="type">{{ type }}</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label for="amount" class="block mb-1">Amount</label>
+            <input type="number" id="amount" [(ngModel)]="amount" min="1" max="50" class="w-full p-2 border rounded" />
+        </div>
+
+        <button class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition" (click)="startQuiz()">
+            Start Quiz
+        </button>
+    </div>
+</div>

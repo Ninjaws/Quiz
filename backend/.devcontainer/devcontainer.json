@@ -1,0 +1,32 @@
+{
+  "name": "Quiz Backend",
+  
+  "build": {
+    "context": "..",
+    "dockerfile": "../Dockerfile",
+    "args": {
+      "WORKDIR": "/app"
+      // "UID": "${localEnv:USER_UID}",
+      // "GID": "${localEnv:USER_GID}"
+    },
+    "target": "development"
+  },
+  "runArgs": [
+    "--name=quiz-backend-dev-cont",
+    "--net=host" // Allows it to be opened on the host network
+  ],
+  "workspaceFolder": "/app",
+  "mounts": [
+    "source=.,target=/app,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {},
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "Oracle.oracle-java",
+        "scala-lang.scala"
+      ]
+    }
+  }
+}
