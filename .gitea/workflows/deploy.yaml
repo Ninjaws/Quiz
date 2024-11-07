@@ -1,16 +1,17 @@
-name: Quiz App Testing
-run-name: ${{ gitea.actor }} is testing Quiz App
-on: [push]
+name: Quiz App Deployment
+run-name: ${{ gitea.actor }} is deploying Quiz App
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   Quiz Runner:
     runs-on: bash
     steps:
       - run: apk add docker-compose
-      - run: docker-compose --version
-      - run: docker --version
       - run: apk add git
       - run: apk add nodejs npm
       - name: Check out repository code
         uses: actions/checkout@v4
-        # Run tests
+      - run: docker-compose up -d --build
