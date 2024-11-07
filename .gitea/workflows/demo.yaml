@@ -4,14 +4,14 @@ on: [push]
 
 jobs:
   Quiz Runner:
-    runs-on: node
+    runs-on: docker
     steps:
-      - run: apt-get install docker-compose
+      - run: apk add docker-compose
       - run: docker-compose --version
-      - run: apt-get update && \
-             apt-get install -y git && \
-             apt-get clean && \
-             rm -rf /var/lib/apt/lists/*
+      # - run: apt-get update && \
+      #        apt-get install -y git && \
+      #        apt-get clean && \
+      #        rm -rf /var/lib/apt/lists/*
       - run: docker --version
       - name: Check out repository code
         uses: actions/checkout@v4
