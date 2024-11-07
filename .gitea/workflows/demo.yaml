@@ -9,5 +9,5 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
       - run: docker --version
-      - run: sudo apt-get install docker-compose
+      - run: sudo apt install docker-compose
       - run: docker-compoe --version
