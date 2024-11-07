@@ -1,10 +1,10 @@
-name: Gitea Actions Demo
-run-name: ${{ gitea.actor }} is testing out Gitea Actions 🚀
+name: Quiz App
+run-name: ${{ gitea.actor }} is building Quiz App
 on: [push]
 
 jobs:
-  Explore-Gitea-Actions:
-    runs-on: ubuntu-latest
+  Quiz Runner:
+    runs-on: docker
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ gitea.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by Gitea!"
