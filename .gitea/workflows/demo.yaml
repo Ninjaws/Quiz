@@ -4,8 +4,10 @@ on: [push]
 
 jobs:
   Quiz Runner:
-    runs-on: docker
+    runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
       - run: docker --version
+      - run: sudo apt-get install docker-compose
+      - run: docker-compoe --version
