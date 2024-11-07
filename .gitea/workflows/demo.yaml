@@ -4,12 +4,12 @@ on: [push]
 
 jobs:
   Quiz Runner:
-    runs-on: docker
+    runs-on: bash
     steps:
-      - name: Ensure bash is installed
-        run: |
-             sudo apt-get update
-             sudo apt-get install bash
+      # - name: Ensure bash is installed
+      #   run: |
+      #        sudo apt-get update
+      #        sudo apt-get install bash
       - run: apk add docker-compose
       - run: docker-compose --version
       # - run: apt-get update && \
