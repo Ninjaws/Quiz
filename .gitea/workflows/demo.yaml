@@ -6,6 +6,10 @@ jobs:
   Quiz Runner:
     runs-on: docker
     steps:
+      - name: Ensure bash is installed
+        run: |
+             sudo apt-get update
+             sudo apt-get install bash
       - run: apk add docker-compose
       - run: docker-compose --version
       # - run: apt-get update && \
