@@ -4,10 +4,10 @@ on: [push]
 
 jobs:
   Quiz Runner:
-    runs-on: bash
+    runs-on: ubuntu-latest
     steps:
-      - run: docker-compose --version
       - run: docker --version
+      - run: docker compose version
       - name: Check out repository code
         uses: actions/checkout@v4
         # Run tests
