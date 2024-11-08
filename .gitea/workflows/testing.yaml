@@ -4,13 +4,10 @@ on: [push]
 
 jobs:
   Quiz Runner:
-    runs-on: bash
+    runs-on: compose-runner
     steps:
-      - run: apk add docker-compose
       - run: docker-compose --version
       - run: docker --version
-      - run: apk add git
-      - run: apk add nodejs npm
       - name: Check out repository code
         uses: actions/checkout@v4
         # Run tests
