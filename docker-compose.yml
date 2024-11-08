@@ -11,6 +11,8 @@ services:
     networks:
       - quiz-network
     restart: always
+    cpu_period: 100000      # Default is 100,000 microseconds (100ms)
+    cpu_quota: 5000        # 5% of the total CPU time
   backend:
     build:
       context: ./backend
@@ -23,6 +25,8 @@ services:
     networks:
       - quiz-network
     restart: always
+    cpu_period: 100000      # Default is 100,000 microseconds (100ms)
+    cpu_quota: 5000        # 5% of the total CPU time
 
 networks:
   quiz-network:  # Define the network
